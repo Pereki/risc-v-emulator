@@ -1,0 +1,93 @@
+#[derive(Debug)]
+pub enum FmtType {
+    R,
+    I,
+    S,
+    B,
+    U,
+    J,
+}
+
+#[derive(Debug)]
+pub enum Instruction {
+    ADD {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    SUB {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    XOR {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    AND {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    OR {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    SLL {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    SRL {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    SRA {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    SLT {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+    SLTU {
+        funct3: u8,
+        funct7: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        rs2: u8,
+    },
+}
