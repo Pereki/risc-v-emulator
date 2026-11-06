@@ -1,10 +1,15 @@
 use std::error::Error;
 
 use crate::cpu::{
-    decode::instructions::Instruction::{self, ADD, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR},
-    execute::r_type_executer::{
-        handle_add, handle_and, handle_or, handle_sll, handle_slt, handle_sltu, handle_sra,
-        handle_srl, handle_sub, handle_xor,
+    decode::instructions::Instruction::{
+        self, ADD, ADDI, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR,
+    },
+    execute::{
+        i_type_executer::execute_addi,
+        r_type_executer::{
+            handle_add, handle_and, handle_or, handle_sll, handle_slt, handle_sltu, handle_sra,
+            handle_srl, handle_sub, handle_xor,
+        },
     },
     risc_v_cpu::RiscVCpu,
 };
@@ -26,6 +31,13 @@ pub fn execute(
     instruction: &Instruction,
 ) -> Result<ExecutionResult, Box<dyn Error>> {
     match instruction {
+        ADDI {
+            funct3,
+            fmt,
+            rd,
+            rs1,
+            imm,
+        } => Ok(execute_addi(risc_v_cpu, rs1, rd, imm)),
         ADD {
             funct3,
             funct7,
@@ -121,6 +133,22 @@ mod tests {
     const RS2_REGISTER: u8 = 11;
     const DEFAULT_VALUE_RS1: u32 = 1;
     const DEFAULT_VALUE_RS2: u32 = 1;
+
+    #[test]
+    fn test_addi_execute() {
+        let instr = Instruction::ADDI {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: 123,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + 123) as u32);
+        assert_eq!(res.register, RD_REGISTER);
+    }
 
     #[test]
     fn test_add_execute() {

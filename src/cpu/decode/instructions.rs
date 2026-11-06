@@ -10,6 +10,14 @@ pub enum FmtType {
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum Instruction {
+    ADDI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
     ADD {
         funct3: u8,
         funct7: u8,

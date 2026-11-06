@@ -3,14 +3,12 @@ use crate::{cpu::risc_v_cpu::RiscVCpu, logger::logger::log};
 mod cpu;
 mod logger;
 fn main() {
-    let program = vec![0x33, 0x85, 0xC5, 0x00, 0xB3, 0x06, 0xB5, 0x40];
+    let program = vec![
+        0x93, 0x05, 0xA0, 0x00, 0x13, 0x06, 0xA0, 0x00, 0x33, 0x85, 0xC5, 0x00, 0xB3, 0x06, 0xB5,
+        0x40,
+    ];
     let mut cpu = RiscVCpu::new();
-    let instructioncount = 2;
-
-    //FOR TESTING PURPOSE ONLY.
-    //Load Values into the registers for add.
-    cpu.register[11] = 1;
-    cpu.register[12] = 1;
+    let instructioncount = 4;
 
     cpu.load_program(&program);
 

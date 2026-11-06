@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use crate::cpu::decode::instructions::{self, Instruction};
+use crate::cpu::decode::instructions::{self, FmtType, Instruction};
 
 pub fn decode_operation(operation: u32) -> Result<Instruction, Box<dyn Error>> {
     let opcode = operation & 0x7F;
@@ -9,8 +9,16 @@ pub fn decode_operation(operation: u32) -> Result<Instruction, Box<dyn Error>> {
     let rd = (operation & 0xF80) >> 7;
     let rs1 = (operation & 0xF8000) >> 15;
     let rs2 = (operation & 0x1F00000) >> 20;
+    let i_type_imm = (operation & 0xFFF00000) >> 20;
 
     match (opcode, funct3, funct7) {
+        (0x13, 0x00, _) => Ok(Instruction::ADDI {
+            funct3: funct3 as u8,
+            fmt: FmtType::I,
+            rd: rd as u8,
+            rs1: rs1 as u8,
+            imm: i_type_imm,
+        }),
         (0x33, 0x0, 0x00) => Ok(Instruction::ADD {
             funct3: funct3 as u8,
             funct7: funct7 as u8,
@@ -97,6 +105,7 @@ pub fn decode_operation(operation: u32) -> Result<Instruction, Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
+
     use super::*; // Brings everything from the outer module into scope
 
     #[test]
@@ -111,6 +120,20 @@ mod tests {
                 rs2: 0,
             },
             decode_operation(0x33).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_addi_decode() {
+        assert_eq!(
+            Instruction::ADDI {
+                funct3: 0,
+                fmt: instructions::FmtType::I,
+                rd: 0,
+                rs1: 0,
+                imm: 0
+            },
+            decode_operation(0x13).unwrap()
         );
     }
 
