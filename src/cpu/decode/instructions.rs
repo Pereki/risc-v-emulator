@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum FmtType {
     R,
     I,
@@ -8,7 +8,7 @@ pub enum FmtType {
     J,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum Instruction {
     ADD {
         funct3: u8,
