@@ -2,14 +2,19 @@ use std::error::Error;
 
 use crate::cpu::{
     decode::instructions::Instruction::{
-        self, ADD, ADDI, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR,
+        self, ADD, ADDI, AND, ANDI, LB, LBU, LH, LHU, LW, OR, ORI, SB, SH, SLL, SLLI, SLT, SLTI,
+        SLTIU, SLTU, SRA, SRAI, SRL, SRLI, SUB, SW, XOR, XORI,
     },
     execute::{
-        i_type_executer::execute_addi,
+        i_type_executer::{
+            handle_addi, handle_andi, handle_load_execute, handle_ori, handle_slli, handle_slti,
+            handle_sltiu, handle_srai, handle_srli, handle_xori,
+        },
         r_type_executer::{
             handle_add, handle_and, handle_or, handle_sll, handle_slt, handle_sltu, handle_sra,
             handle_srl, handle_sub, handle_xor,
         },
+        s_type_executer::{handle_sb, handle_sh, handle_sw},
     },
     risc_v_cpu::RiscVCpu,
 };
@@ -17,12 +22,17 @@ use crate::cpu::{
 #[derive(Debug)]
 pub struct ExecutionResult {
     pub result: u32,
-    pub register: u8,
+    pub address: u32,
+    pub size: u32,
 }
 
 impl ExecutionResult {
-    pub fn new(result: u32, register: u8) -> Self {
-        Self { result, register }
+    pub fn new(result: u32, address: u32) -> Self {
+        Self {
+            result,
+            address: address,
+            size: 0xFF,
+        }
     }
 }
 
@@ -31,13 +41,126 @@ pub fn execute(
     instruction: &Instruction,
 ) -> Result<ExecutionResult, Box<dyn Error>> {
     match instruction {
-        ADDI {
-            funct3,
-            fmt,
+        SB {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_sb(risc_v_cpu, rs1, rs2, imm)),
+        SW {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_sw(risc_v_cpu, rs1, rs2, imm)),
+        SH {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_sh(risc_v_cpu, rs1, rs2, imm)),
+        LHU {
+            funct3: _,
+            fmt: _,
             rd,
             rs1,
             imm,
-        } => Ok(execute_addi(risc_v_cpu, rs1, rd, imm)),
+        } => Ok(handle_load_execute(risc_v_cpu, rd, rs1, imm)),
+        LBU {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_load_execute(risc_v_cpu, rd, rs1, imm)),
+        LW {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_load_execute(risc_v_cpu, rd, rs1, imm)),
+        LH {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_load_execute(risc_v_cpu, rd, rs1, imm)),
+        LB {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_load_execute(risc_v_cpu, rd, rs1, imm)),
+        SLTIU {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_sltiu(risc_v_cpu, rd, rs1, imm)),
+        SLTI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_slti(risc_v_cpu, rd, rs1, imm)),
+        SRAI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_srai(risc_v_cpu, rd, rs1, imm)),
+        SRLI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_srli(risc_v_cpu, rd, rs1, imm)),
+        SLLI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_slli(risc_v_cpu, rd, rs1, imm)),
+
+        ANDI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_andi(risc_v_cpu, rd, rs1, imm)),
+        ORI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_ori(risc_v_cpu, rd, rs1, imm)),
+        XORI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_xori(risc_v_cpu, rd, rs1, imm)),
+        ADDI {
+            funct3: _,
+            fmt: _,
+            rd,
+            rs1,
+            imm,
+        } => Ok(handle_addi(risc_v_cpu, rd, rs1, imm)),
         ADD {
             funct3,
             funct7,
@@ -133,6 +256,135 @@ mod tests {
     const RS2_REGISTER: u8 = 11;
     const DEFAULT_VALUE_RS1: u32 = 1;
     const DEFAULT_VALUE_RS2: u32 = 1;
+    const DEFAULT_VALUE_IMM: u32 = 1;
+
+    #[test]
+    fn test_sltiu_execute() {
+        let instr = Instruction::SLTIU {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_slti_execute() {
+        let instr = Instruction::SLTI {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_srai_execute() {
+        let instr = Instruction::SRLI {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_srli_execute() {
+        let instr = Instruction::SRLI {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_slli_execute() {
+        let instr = Instruction::SLLI {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 2 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_ori_execute() {
+        let instr = Instruction::ORI {
+            funct3: 0,
+            fmt: FmtType::I,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_RS1 | DEFAULT_VALUE_IMM as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_andi_execute() {
+        let instr = Instruction::ANDI {
+            funct3: 0,
+            fmt: FmtType::I,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_IMM & DEFAULT_VALUE_RS1);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_xori_execute() {
+        let instr = Instruction::XORI {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 ^ DEFAULT_VALUE_IMM) as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
 
     #[test]
     fn test_addi_execute() {
@@ -141,13 +393,13 @@ mod tests {
             fmt: FmtType::R,
             rd: RD_REGISTER,
             rs1: RS1_REGISTER,
-            imm: 123,
+            imm: DEFAULT_VALUE_IMM,
         };
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + 123) as u32);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM) as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 
     #[test]
@@ -165,7 +417,7 @@ mod tests {
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
         assert_eq!(res.result, (DEFAULT_VALUE_RS1 + DEFAULT_VALUE_RS2) as u32);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 
     #[test]
@@ -183,7 +435,7 @@ mod tests {
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
         assert_eq!(res.result, (DEFAULT_VALUE_RS1 - DEFAULT_VALUE_RS2) as u32);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 
     #[test]
@@ -201,7 +453,7 @@ mod tests {
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
         assert_eq!(res.result, 0 as u32);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 
     #[test]
@@ -219,7 +471,7 @@ mod tests {
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
         assert_eq!(res.result, 1 as u32);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 
     #[test]
@@ -237,6 +489,152 @@ mod tests {
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
         assert_eq!(res.result, 1 as u32);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+    #[test]
+    fn test_sll_execute() {
+        let instr = Instruction::SLL {
+            funct3: 0,
+            funct7: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            rs2: RS2_REGISTER,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 2 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+    #[test]
+    fn test_sra_execute() {
+        let instr = Instruction::SRA {
+            funct3: 0,
+            funct7: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            rs2: RS2_REGISTER,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+    #[test]
+    fn test_slt_execute() {
+        let instr = Instruction::SLT {
+            funct3: 0,
+            funct7: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            rs2: RS2_REGISTER,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
+        cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+    #[test]
+    fn test_sltu_execute() {
+        let instr = Instruction::SLTU {
+            funct3: 0,
+            funct7: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            rs2: RS2_REGISTER,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
+        cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+    #[test]
+    fn test_lb_execute() {
+        let instr = Instruction::LB {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_IMM + DEFAULT_VALUE_RS1);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_lh_execute() {
+        let instr = Instruction::LH {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_IMM + DEFAULT_VALUE_RS1);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+    #[test]
+    fn test_lw_execute() {
+        let instr = Instruction::LW {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM as u32);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_lbu_execute() {
+        let instr = Instruction::LBU {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM);
+        assert_eq!(res.address, RD_REGISTER as u32);
+    }
+
+    #[test]
+    fn test_lhu_execute() {
+        let instr = Instruction::LHU {
+            funct3: 0,
+            fmt: FmtType::R,
+            rd: RD_REGISTER,
+            rs1: RS1_REGISTER,
+            imm: DEFAULT_VALUE_IMM,
+        };
+        let mut cpu = RiscVCpu::new();
+        cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
+        let res = execute(&mut cpu, &instr).unwrap();
+        assert_eq!(res.result, DEFAULT_VALUE_IMM + DEFAULT_VALUE_RS1);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 }

@@ -17,7 +17,7 @@ pub fn handle_sltu(
         } else {
             0
         },
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -37,7 +37,7 @@ pub fn handle_slt(
         } else {
             0
         },
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -52,7 +52,7 @@ pub fn handle_sra(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         (cpu.register[rs1.clone() as usize] as i32 >> cpu.register[rs2.clone() as usize]) as u32,
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -67,7 +67,7 @@ pub fn handle_srl(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] >> cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -82,7 +82,7 @@ pub fn handle_sll(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] << cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -97,7 +97,7 @@ pub fn handle_and(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] & cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -112,7 +112,7 @@ pub fn handle_or(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] | cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -127,7 +127,7 @@ pub fn handle_xor(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] ^ cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -142,7 +142,7 @@ pub fn handle_sub(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] - cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -157,7 +157,7 @@ pub fn handle_add(
 ) -> ExecutionResult {
     return ExecutionResult::new(
         cpu.register[rs1.clone() as usize] + cpu.register[rs2.clone() as usize],
-        rd.clone(),
+        rd.clone() as u32,
     );
 }
 
@@ -187,6 +187,6 @@ mod tests {
             &RS2_REGISTER,
         );
         assert_eq!(res.result, DEFAULT_VALUE_RS1 + DEFAULT_VALUE_RS2);
-        assert_eq!(res.register, RD_REGISTER);
+        assert_eq!(res.address, RD_REGISTER as u32);
     }
 }

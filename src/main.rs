@@ -2,6 +2,7 @@ use crate::{cpu::risc_v_cpu::RiscVCpu, logger::logger::log};
 
 mod cpu;
 mod logger;
+
 fn main() {
     let program = vec![
         0x93, 0x05, 0xA0, 0x00, 0x13, 0x06, 0xA0, 0x00, 0x33, 0x85, 0xC5, 0x00, 0xB3, 0x06, 0xB5,
@@ -36,8 +37,12 @@ fn main() {
         )
         .as_str());
 
-        cpu.memory_access(&instruction);
-        cpu.write_back(execute_result.register, execute_result.result);
+        let had_memory_access = cpu.memory_access(&instruction, &execute_result);
+        cpu.write_back(
+            execute_result.address as u8,
+            execute_result.result,
+            had_memory_access,
+        );
 
         cpu.next_operation();
     }

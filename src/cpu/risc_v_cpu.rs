@@ -3,6 +3,7 @@ use std::error::Error;
 use crate::cpu::{
     decode::{decoder::decode_operation, instructions::Instruction},
     execute::executer::{ExecutionResult, execute},
+    memory::memory_access::handle_memory_access,
 };
 
 const REGISTER_SIZE: usize = 32;
@@ -56,10 +57,16 @@ impl RiscVCpu {
         execute(self, instruction)
     }
 
-    pub fn memory_access(&mut self, instruction: &Instruction) {}
+    pub fn memory_access(
+        &mut self,
+        instruction: &Instruction,
+        execution_result: &ExecutionResult,
+    ) -> bool {
+        handle_memory_access(self, instruction, execution_result)
+    }
 
-    pub fn write_back(&mut self, register: u8, value: u32) {
-        if register == 0 {
+    pub fn write_back(&mut self, register: u8, value: u32, had_memory_access: bool) {
+        if register == 0 || had_memory_access {
             return;
         }
         self.register[register as usize] = value;

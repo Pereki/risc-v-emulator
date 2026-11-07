@@ -10,6 +10,124 @@ pub enum FmtType {
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum Instruction {
+    SW {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    SH {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    SB {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    LHU {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    LBU {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    LW {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    LH {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    LB {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    SLTIU {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    SLTI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
+    SRAI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
+    SRLI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
+    SLLI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+    ORI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
+    ANDI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
+    XORI {
+        funct3: u8,
+        fmt: FmtType,
+        rd: u8,
+        rs1: u8,
+        imm: u32,
+    },
+
     ADDI {
         funct3: u8,
         fmt: FmtType,
