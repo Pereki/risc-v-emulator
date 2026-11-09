@@ -1,8 +1,9 @@
 use std::error::Error;
 
 use crate::cpu::{
-    decode::{decoder::decode_operation, instructions::Instruction},
-    execute::executer::{ExecutionResult, execute},
+    decode::decoder::decode_operation,
+    execute::executer::execute,
+    execution_step::{InstructionExecutionSteps, ResultSet, Step::WRITEBACK},
     memory::memory_access::handle_memory_access,
 };
 
@@ -43,30 +44,49 @@ impl RiscVCpu {
         self.program_counter += 4;
     }
 
-    pub fn decode(&mut self, operation: u32) -> Result<Instruction, Box<dyn Error>> {
+    pub fn decode(&mut self, operation: u32) -> Result<InstructionExecutionSteps, Box<dyn Error>> {
         decode_operation(operation)
     }
 
     pub fn execute(
         &mut self,
-        instruction: &Instruction,
-    ) -> Result<ExecutionResult, Box<dyn Error>> {
+        instruction: &InstructionExecutionSteps,
+    ) -> Option<Result<ResultSet, Box<dyn Error>>> {
         execute(self, instruction)
     }
 
     pub fn memory_access(
         &mut self,
-        instruction: &Instruction,
-        execution_result: &ExecutionResult,
-    ) -> Option<Result<ExecutionResult, Box<dyn Error>>> {
-        handle_memory_access(self, instruction, execution_result)
+        instruction: &InstructionExecutionSteps,
+    ) -> Option<Result<ResultSet, Box<dyn Error>>> {
+        handle_memory_access(self, instruction)
     }
 
-    pub fn write_back(&mut self, register: u8, value: u32, needs_writeback: bool) {
-        if register == 0 || !needs_writeback {
-            return;
+    pub fn write_back(
+        &mut self,
+        instruction: &InstructionExecutionSteps,
+    ) -> Result<(), Box<dyn Error>> {
+        if !instruction.next_steps.contains(&WRITEBACK) {
+            return Ok(());
         }
-        self.register[register as usize] = value;
+
+        let write_op = match &instruction.memory_access_result {
+            Some(res) => res,
+            None => match &instruction.arithmetic_result {
+                Some(res) => res,
+                None => {
+                    return Err(Box::from(
+                        "Could not write back, even tough there must be a valid value.",
+                    ));
+                }
+            },
+        };
+
+        if write_op.target == 0 {
+            return Ok(());
+        }
+        self.register[write_op.target as usize] = write_op.result;
+        Ok(())
     }
 
     pub fn print_cpu_state(&self) {
