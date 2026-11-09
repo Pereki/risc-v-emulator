@@ -11,14 +11,14 @@ pub fn handle_sltu(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        if cpu.register[rs1.clone() as usize] < cpu.register[rs2.clone() as usize] {
+    ExecutionResult::new(
+        if cpu.register[*rs1 as usize] < cpu.register[*rs2 as usize] {
             1
         } else {
             0
         },
-        rd.clone() as u32,
-    );
+        *rd as u32,
+    )
 }
 
 pub fn handle_slt(
@@ -30,15 +30,14 @@ pub fn handle_slt(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        if (cpu.register[rs1.clone() as usize] as i32) < (cpu.register[rs2.clone() as usize] as i32)
-        {
+    ExecutionResult::new(
+        if (cpu.register[*rs1 as usize] as i32) < (cpu.register[*rs2 as usize] as i32) {
             1
         } else {
             0
         },
-        rd.clone() as u32,
-    );
+        *rd as u32,
+    )
 }
 
 pub fn handle_sra(
@@ -50,10 +49,10 @@ pub fn handle_sra(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        (cpu.register[rs1.clone() as usize] as i32 >> cpu.register[rs2.clone() as usize]) as u32,
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        (cpu.register[*rs1 as usize] as i32 >> cpu.register[*rs2 as usize]) as u32,
+        *rd as u32,
+    )
 }
 
 pub fn handle_srl(
@@ -65,10 +64,10 @@ pub fn handle_srl(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] >> cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] >> cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 pub fn handle_sll(
@@ -80,10 +79,10 @@ pub fn handle_sll(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] << cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] << cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 pub fn handle_and(
@@ -95,10 +94,10 @@ pub fn handle_and(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] & cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] & cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 pub fn handle_or(
@@ -110,10 +109,10 @@ pub fn handle_or(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] | cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] | cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 pub fn handle_xor(
@@ -125,10 +124,10 @@ pub fn handle_xor(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] ^ cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] ^ cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 pub fn handle_sub(
@@ -140,10 +139,10 @@ pub fn handle_sub(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] - cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] - cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 pub fn handle_add(
@@ -155,10 +154,10 @@ pub fn handle_add(
     rs1: &u8,
     rs2: &u8,
 ) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] + cpu.register[rs2.clone() as usize],
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        cpu.register[*rs1 as usize] + cpu.register[*rs2 as usize],
+        *rd as u32,
+    )
 }
 
 #[cfg(test)]

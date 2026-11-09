@@ -20,56 +20,56 @@ pub fn handle_memory_access(
             rs1: _,
             rs2: _,
             imm: _,
-        } => Some(Ok(handle_sb(cpu, &execution_result))),
+        } => Some(Ok(handle_sb(cpu, execution_result))),
         Instruction::SH {
             funct3: _,
             fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
-        } => Some(Ok(handle_sh(cpu, &execution_result))),
+        } => Some(Ok(handle_sh(cpu, execution_result))),
         Instruction::SW {
             funct3: _,
             fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
-        } => Some(Ok(handle_sw(cpu, &execution_result))),
+        } => Some(Ok(handle_sw(cpu, execution_result))),
         Instruction::LHU {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => Some(Ok(handle_lhu(cpu, &execution_result))),
+        } => Some(Ok(handle_lhu(cpu, execution_result))),
         Instruction::LBU {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => Some(Ok(handle_lbu(cpu, &execution_result))),
+        } => Some(Ok(handle_lbu(cpu, execution_result))),
         Instruction::LW {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => Some(Ok(handle_lw(cpu, &execution_result))),
+        } => Some(Ok(handle_lw(cpu, execution_result))),
         Instruction::LH {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => Some(Ok(handle_lh(cpu, &execution_result))),
+        } => Some(Ok(handle_lh(cpu, execution_result))),
         Instruction::LB {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => Some(Ok(handle_lb(cpu, &execution_result))),
+        } => Some(Ok(handle_lb(cpu, execution_result))),
         _ => Some(Err(Box::from("Did not find viable Instruction."))),
     }
 }
@@ -198,7 +198,7 @@ mod tests {
         let value = ((cpu.memory[res.address as usize + 1] as u32) << 8)
             | (cpu.memory[(res.address) as usize] as u32);
 
-        assert_eq!(value, res.result as u32);
+        assert_eq!(value, res.result);
     }
 
     #[test]
@@ -220,7 +220,7 @@ mod tests {
             | ((cpu.memory[res.address as usize + 2] as u32) << 16)
             | ((cpu.memory[res.address as usize + 1] as u32) << 8)
             | (cpu.memory[(res.address) as usize] as u32);
-        assert_eq!(value, res.result as u32);
+        assert_eq!(value, res.result);
     }
 
     #[test]

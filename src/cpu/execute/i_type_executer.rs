@@ -2,8 +2,8 @@ use crate::cpu::{execute::executer::ExecutionResult, risc_v_cpu::RiscVCpu};
 
 pub fn handle_load_execute(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
     let mut res = ExecutionResult::new(
-        (cpu.register[rs1.clone() as usize] + imm.clone() as u32) as i32 as u32,
-        rd.clone() as u32,
+        (cpu.register[*rs1 as usize] + *imm) as i32 as u32,
+        *rd as u32,
     );
     res.need_memory_access = true;
     res.need_write = true;
@@ -11,74 +11,56 @@ pub fn handle_load_execute(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> 
 }
 
 pub fn handle_sltiu(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        if cpu.register[rs1.clone() as usize] < imm.clone() {
+    ExecutionResult::new(
+        if cpu.register[*rs1 as usize] < *imm {
             1
         } else {
             0
         },
-        rd.clone() as u32,
-    );
+        *rd as u32,
+    )
 }
 
 pub fn handle_slti(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        if (cpu.register[rs1.clone() as usize] as i32) < (imm.clone() as i32) {
+    ExecutionResult::new(
+        if (cpu.register[*rs1 as usize] as i32) < (*imm as i32) {
             1
         } else {
             0
         },
-        rd.clone() as u32,
-    );
+        *rd as u32,
+    )
 }
 
 pub fn handle_srai(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        (cpu.register[rs1.clone() as usize] as i32 >> (imm.clone() & 0x31)) as u32,
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(
+        (cpu.register[*rs1 as usize] as i32 >> (*imm & 0x31)) as u32,
+        *rd as u32,
+    )
 }
 
 pub fn handle_srli(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] >> (imm.clone() & 0x31),
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(cpu.register[*rs1 as usize] >> (*imm & 0x31), *rd as u32)
 }
 
 pub fn handle_slli(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] << (imm.clone() & 0x31),
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(cpu.register[*rs1 as usize] << (*imm & 0x31), *rd as u32)
 }
 
 pub fn handle_andi(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] & imm.clone(),
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(cpu.register[*rs1 as usize] & *imm, *rd as u32)
 }
 
 pub fn handle_ori(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] | imm.clone(),
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(cpu.register[*rs1 as usize] | *imm, *rd as u32)
 }
 
 pub fn handle_xori(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] ^ imm.clone(),
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(cpu.register[*rs1 as usize] ^ *imm, *rd as u32)
 }
 
 pub fn handle_addi(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
-        cpu.register[rs1.clone() as usize] + imm.clone(),
-        rd.clone() as u32,
-    );
+    ExecutionResult::new(cpu.register[*rs1 as usize] + *imm, *rd as u32)
 }
 
 #[cfg(test)]

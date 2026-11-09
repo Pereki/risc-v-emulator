@@ -24,11 +24,9 @@ impl RiscVCpu {
         }
     }
 
-    pub fn load_program(&mut self, program: &Vec<u8>) {
-        let mut offset = 0;
-        for byte in program {
-            self.memory[offset] = byte.clone();
-            offset += 1;
+    pub fn load_program(&mut self, program: &[u8]) {
+        for (offset, byte) in program.iter().enumerate() {
+            self.memory[offset] = *byte;
         }
     }
 
@@ -38,8 +36,7 @@ impl RiscVCpu {
         let third = self.memory[(self.program_counter + 2) as usize];
         let fourth = self.memory[(self.program_counter + 3) as usize];
 
-        ((fourth as u32) << 24)
-            | (((third as u32) << 16) as u32 | ((second as u32) << 8 | first as u32))
+        ((fourth as u32) << 24) | (((third as u32) << 16) | ((second as u32) << 8 | first as u32))
     }
 
     pub fn next_operation(&mut self) {
@@ -80,12 +77,7 @@ impl RiscVCpu {
             println!("Register [{}]: {:x}", number, value);
         }
         println!("----- MEMORY -----");
-        for (number, value) in self
-            .memory
-            .iter()
-            .enumerate()
-            .filter(|(n, _)| n.clone() <= 100 as usize)
-        {
+        for (number, value) in self.memory.iter().enumerate().filter(|(n, _)| *n <= 100) {
             println!("Memory address [{}]: {:x}", number, value);
         }
     }

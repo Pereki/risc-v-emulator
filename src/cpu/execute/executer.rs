@@ -291,7 +291,6 @@ pub fn execute(
             rs1,
             rs2,
         } => Ok(handle_sltu(risc_v_cpu, funct3, funct7, fmt, rd, rs1, rs2)),
-        _ => Err(Box::from("Could not find executor for instruction.")),
     }
 }
 
@@ -320,7 +319,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -336,7 +335,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -352,7 +351,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -368,7 +367,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -384,7 +383,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 2 as u32);
+        assert_eq!(res.result, 2);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -400,7 +399,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, DEFAULT_VALUE_RS1 | DEFAULT_VALUE_IMM as u32);
+        assert_eq!(res.result, DEFAULT_VALUE_RS1 | DEFAULT_VALUE_IMM);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -432,7 +431,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, (DEFAULT_VALUE_RS1 ^ DEFAULT_VALUE_IMM) as u32);
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 ^ DEFAULT_VALUE_IMM));
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -448,7 +447,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM) as u32);
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM));
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -466,7 +465,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + DEFAULT_VALUE_RS2) as u32);
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 + DEFAULT_VALUE_RS2));
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -484,7 +483,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, (DEFAULT_VALUE_RS1 - DEFAULT_VALUE_RS2) as u32);
+        assert_eq!(res.result, (DEFAULT_VALUE_RS1 - DEFAULT_VALUE_RS2));
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -502,7 +501,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -520,7 +519,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 1 as u32);
+        assert_eq!(res.result, 1);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
@@ -538,7 +537,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 1 as u32);
+        assert_eq!(res.result, 1);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
     #[test]
@@ -555,7 +554,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 2 as u32);
+        assert_eq!(res.result, 2);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
     #[test]
@@ -572,7 +571,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
     #[test]
@@ -589,7 +588,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
     #[test]
@@ -606,7 +605,7 @@ mod tests {
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1 + 1;
         cpu.register[RS2_REGISTER as usize] = DEFAULT_VALUE_RS2;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, 0 as u32);
+        assert_eq!(res.result, 0);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
     #[test]
@@ -652,7 +651,7 @@ mod tests {
         let mut cpu = RiscVCpu::new();
         cpu.register[RS1_REGISTER as usize] = DEFAULT_VALUE_RS1;
         let res = execute(&mut cpu, &instr).unwrap();
-        assert_eq!(res.result, DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM as u32);
+        assert_eq!(res.result, DEFAULT_VALUE_RS1 + DEFAULT_VALUE_IMM);
         assert_eq!(res.address, RD_REGISTER as u32);
     }
 
