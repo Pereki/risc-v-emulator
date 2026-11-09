@@ -2,10 +2,13 @@ use std::error::Error;
 
 use crate::cpu::{
     decode::instructions::Instruction::{
-        self, ADD, ADDI, AND, ANDI, LB, LBU, LH, LHU, LW, OR, ORI, SB, SH, SLL, SLLI, SLT, SLTI,
-        SLTIU, SLTU, SRA, SRAI, SRL, SRLI, SUB, SW, XOR, XORI,
+        self, ADD, ADDI, AND, ANDI, BEQ, BGE, BGEU, BLT, BLTU, BNE, LB, LBU, LH, LHU, LW, OR, ORI,
+        SB, SH, SLL, SLLI, SLT, SLTI, SLTIU, SLTU, SRA, SRAI, SRL, SRLI, SUB, SW, XOR, XORI,
     },
     execute::{
+        b_type_executer::{
+            handle_beq, handle_bge, handle_bgeu, handle_blt, handle_bltu, handle_bne,
+        },
         i_type_executer::{
             handle_addi, handle_andi, handle_load_execute, handle_ori, handle_slli, handle_slti,
             handle_sltiu, handle_srai, handle_srli, handle_xori,
@@ -19,19 +22,24 @@ use crate::cpu::{
     risc_v_cpu::RiscVCpu,
 };
 
+//TODO: make result, address and size Optional
 #[derive(Debug)]
 pub struct ExecutionResult {
     pub result: u32,
     pub address: u32,
     pub size: u32,
+    pub need_write: bool,
+    pub need_memory_access: bool,
 }
 
 impl ExecutionResult {
     pub fn new(result: u32, address: u32) -> Self {
         Self {
             result,
-            address: address,
+            address,
             size: 0xFF,
+            need_write: true,
+            need_memory_access: false,
         }
     }
 }
@@ -41,6 +49,48 @@ pub fn execute(
     instruction: &Instruction,
 ) -> Result<ExecutionResult, Box<dyn Error>> {
     match instruction {
+        BGEU {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_bgeu(risc_v_cpu, rs1, rs2, imm)),
+        BLTU {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_bltu(risc_v_cpu, rs1, rs2, imm)),
+        BGE {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_bge(risc_v_cpu, rs1, rs2, imm)),
+        BLT {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_blt(risc_v_cpu, rs1, rs2, imm)),
+        BNE {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_bne(risc_v_cpu, rs1, rs2, imm)),
+        BEQ {
+            funct3: _,
+            fmt: _,
+            rs1,
+            rs2,
+            imm,
+        } => Ok(handle_beq(risc_v_cpu, rs1, rs2, imm)),
         SB {
             funct3: _,
             fmt: _,

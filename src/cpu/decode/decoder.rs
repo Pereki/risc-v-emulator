@@ -11,12 +11,62 @@ pub fn decode_operation(operation: u32) -> Result<Instruction, Box<dyn Error>> {
     let rs2 = (operation & 0x1F00000) >> 20;
     let i_type_imm = (operation & 0xFFF00000) >> 20;
 
+    //TODO:refactor this into its own functions
     let first = (operation & 0xF80) >> 7;
     let second = (operation & 0xFE000000) >> 25 << 5;
+
+    let elevent_bit = ((operation & 0x80) >> 7) << 11;
+    let one_to_four = ((operation & 0xf00) >> 8) << 1;
+    let fife_to_eleven = ((operation & 0x7E000000) >> 25) << 5;
+    let twelve_bit = (operation & 0x80000000 >> 31) << 12;
+
+    let b_type_imm = elevent_bit | one_to_four | fife_to_eleven | twelve_bit;
 
     let s_type_imm = first | second;
 
     match (opcode, funct3, funct7) {
+        (0x63, 0x7, _) => Ok(Instruction::BGEU {
+            funct3: funct3 as u8,
+            fmt: FmtType::B,
+            rs1: rs1 as u8,
+            rs2: rs2 as u8,
+            imm: b_type_imm,
+        }),
+        (0x63, 0x6, _) => Ok(Instruction::BLTU {
+            funct3: funct3 as u8,
+            fmt: FmtType::B,
+            rs1: rs1 as u8,
+            rs2: rs2 as u8,
+            imm: b_type_imm,
+        }),
+        (0x63, 0x5, _) => Ok(Instruction::BGE {
+            funct3: funct3 as u8,
+            fmt: FmtType::B,
+            rs1: rs1 as u8,
+            rs2: rs2 as u8,
+            imm: b_type_imm,
+        }),
+        (0x63, 0x4, _) => Ok(Instruction::BLT {
+            funct3: funct3 as u8,
+            fmt: FmtType::B,
+            rs1: rs1 as u8,
+            rs2: rs2 as u8,
+            imm: b_type_imm,
+        }),
+        (0x63, 0x1, _) => Ok(Instruction::BNE {
+            funct3: funct3 as u8,
+            fmt: FmtType::B,
+            rs1: rs1 as u8,
+            rs2: rs2 as u8,
+            imm: b_type_imm,
+        }),
+        (0x63, 0x0, _) => Ok(Instruction::BEQ {
+            funct3: funct3 as u8,
+            fmt: FmtType::B,
+            rs1: rs1 as u8,
+            rs2: rs2 as u8,
+            imm: b_type_imm,
+        }),
         (0x23, 0x2, _) => Ok(Instruction::SW {
             funct3: funct3 as u8,
             fmt: FmtType::S,

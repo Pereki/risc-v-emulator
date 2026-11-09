@@ -1,10 +1,13 @@
 use crate::cpu::{execute::executer::ExecutionResult, risc_v_cpu::RiscVCpu};
 
 pub fn handle_load_execute(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {
-    return ExecutionResult::new(
+    let mut res = ExecutionResult::new(
         (cpu.register[rs1.clone() as usize] + imm.clone() as u32) as i32 as u32,
         rd.clone() as u32,
     );
+    res.need_memory_access = true;
+    res.need_write = true;
+    res
 }
 
 pub fn handle_sltiu(cpu: &mut RiscVCpu, rd: &u8, rs1: &u8, imm: &u32) -> ExecutionResult {

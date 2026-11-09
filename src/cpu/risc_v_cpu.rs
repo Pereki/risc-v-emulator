@@ -61,15 +61,33 @@ impl RiscVCpu {
         &mut self,
         instruction: &Instruction,
         execution_result: &ExecutionResult,
-    ) -> bool {
+    ) -> Option<Result<ExecutionResult, Box<dyn Error>>> {
         handle_memory_access(self, instruction, execution_result)
     }
 
-    pub fn write_back(&mut self, register: u8, value: u32, had_memory_access: bool) {
-        if register == 0 || had_memory_access {
+    pub fn write_back(&mut self, register: u8, value: u32, needs_writeback: bool) {
+        if register == 0 || !needs_writeback {
             return;
         }
         self.register[register as usize] = value;
+    }
+
+    pub fn print_cpu_state(&self) {
+        println!("----- CPU STATE -----");
+        println!("PC: {}", self.program_counter);
+        println!("----- REGISTERS -----");
+        for (number, value) in self.register.iter().enumerate() {
+            println!("Register [{}]: {:x}", number, value);
+        }
+        println!("----- MEMORY -----");
+        for (number, value) in self
+            .memory
+            .iter()
+            .enumerate()
+            .filter(|(n, _)| n.clone() <= 100 as usize)
+        {
+            println!("Memory address [{}]: {:x}", number, value);
+        }
     }
 }
 

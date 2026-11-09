@@ -10,6 +10,48 @@ pub enum FmtType {
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum Instruction {
+    BGEU {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    BLTU {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    BGE {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    BLT {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    BNE {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
+    BEQ {
+        funct3: u8,
+        fmt: FmtType,
+        rs1: u8,
+        rs2: u8,
+        imm: u32,
+    },
     SW {
         funct3: u8,
         fmt: FmtType,

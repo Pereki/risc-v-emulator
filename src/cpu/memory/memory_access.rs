@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use crate::cpu::{
     decode::instructions::Instruction, execute::executer::ExecutionResult, risc_v_cpu::RiscVCpu,
 };
@@ -6,127 +8,146 @@ pub fn handle_memory_access(
     cpu: &mut RiscVCpu,
     instruction: &Instruction,
     execution_result: &ExecutionResult,
-) -> bool {
-    let _ = match instruction {
+) -> Option<Result<ExecutionResult, Box<dyn Error>>> {
+    if !execution_result.need_memory_access {
+        return None;
+    }
+
+    match instruction {
         Instruction::SB {
             funct3: _,
             fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
-        } => handle_sb(cpu, &execution_result),
+        } => Some(Ok(handle_sb(cpu, &execution_result))),
         Instruction::SH {
             funct3: _,
             fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
-        } => handle_sh(cpu, &execution_result),
+        } => Some(Ok(handle_sh(cpu, &execution_result))),
         Instruction::SW {
             funct3: _,
             fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
-        } => handle_sw(cpu, &execution_result),
+        } => Some(Ok(handle_sw(cpu, &execution_result))),
         Instruction::LHU {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => handle_lhu(cpu, &execution_result),
+        } => Some(Ok(handle_lhu(cpu, &execution_result))),
         Instruction::LBU {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => handle_lbu(cpu, &execution_result),
+        } => Some(Ok(handle_lbu(cpu, &execution_result))),
         Instruction::LW {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => handle_lw(cpu, &execution_result),
+        } => Some(Ok(handle_lw(cpu, &execution_result))),
         Instruction::LH {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => handle_lh(cpu, &execution_result),
+        } => Some(Ok(handle_lh(cpu, &execution_result))),
         Instruction::LB {
             funct3: _,
             fmt: _,
             rd: _,
             rs1: _,
             imm: _,
-        } => handle_lb(cpu, &execution_result),
-        _ => {
-            return false;
-        }
-    };
-
-    return true;
+        } => Some(Ok(handle_lb(cpu, &execution_result))),
+        _ => Some(Err(Box::from("Did not find viable Instruction."))),
+    }
 }
 
-pub fn handle_sb(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.memory[execution_result.address as usize] =
-        (execution_result.result & execution_result.size) as u8;
+pub fn handle_sb(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    cpu.memory[execution_result.address as usize] = (execution_result.result) as u8;
+
+    let mut exec_res = ExecutionResult::new(0, 0);
+    exec_res.need_write = false;
+    exec_res
 }
 
-pub fn handle_sh(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.memory[execution_result.address as usize] =
-        ((execution_result.result & execution_result.size) & 0xFF) as u8;
+pub fn handle_sh(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    cpu.memory[execution_result.address as usize] = ((execution_result.result) & 0xFF) as u8;
 
     cpu.memory[(execution_result.address + 1) as usize] =
-        (((execution_result.result & execution_result.size) & 0xFF00) >> 8) as u8;
+        (((execution_result.result) & 0xFF00) >> 8) as u8;
+
+    let mut exec_res = ExecutionResult::new(0, 0);
+    exec_res.need_write = false;
+    exec_res
 }
 
-pub fn handle_sw(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.memory[execution_result.address as usize] =
-        ((execution_result.result & execution_result.size) & 0xFF) as u8;
+pub fn handle_sw(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    cpu.memory[execution_result.address as usize] = ((execution_result.result) & 0xFF) as u8;
 
     cpu.memory[(execution_result.address + 1) as usize] =
-        (((execution_result.result & execution_result.size) & 0xFF00) >> 8) as u8;
+        (((execution_result.result) & 0xFF00) >> 8) as u8;
 
     cpu.memory[(execution_result.address + 2) as usize] =
-        (((execution_result.result & execution_result.size) & 0xFF0000) >> 16) as u8;
+        (((execution_result.result) & 0xFF0000) >> 16) as u8;
 
     cpu.memory[(execution_result.address + 3) as usize] =
-        (((execution_result.result & execution_result.size) & 0xFF000000) >> 24) as u8;
+        (((execution_result.result) & 0xFF000000) >> 24) as u8;
+
+    let mut exec_res = ExecutionResult::new(0, 0);
+    exec_res.need_write = false;
+    exec_res
 }
 
-pub fn handle_lhu(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.register[execution_result.address as usize] =
+pub fn handle_lhu(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    ExecutionResult::new(
         (cpu.memory[(execution_result.result + 1) as usize] as i32 as u32) << 8
-            | cpu.memory[execution_result.result as usize] as i32 as u32;
+            | cpu.memory[execution_result.result as usize] as i32 as u32,
+        execution_result.address,
+    )
 }
 
-pub fn handle_lbu(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.register[execution_result.address as usize] =
-        cpu.memory[execution_result.result as usize] as i32 as u32;
+pub fn handle_lbu(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    ExecutionResult::new(
+        cpu.memory[execution_result.result as usize] as i32 as u32,
+        execution_result.address,
+    )
 }
 
-pub fn handle_lw(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.register[execution_result.address as usize] =
+pub fn handle_lw(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    ExecutionResult::new(
         (cpu.memory[execution_result.result as usize + 3] as u32) << 24
             | (cpu.memory[execution_result.result as usize + 2] as u32) << 16
             | (cpu.memory[execution_result.result as usize + 1] as u32) << 8
-            | cpu.memory[execution_result.result as usize] as u32;
+            | cpu.memory[execution_result.result as usize] as u32,
+        execution_result.address,
+    )
 }
 
-pub fn handle_lh(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.register[execution_result.address as usize] =
+pub fn handle_lh(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    ExecutionResult::new(
         (cpu.memory[(execution_result.result + 1) as usize] as u32) << 8
-            | cpu.memory[execution_result.result as usize] as u32;
+            | cpu.memory[execution_result.result as usize] as u32,
+        execution_result.address,
+    )
 }
 
-pub fn handle_lb(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) {
-    cpu.register[execution_result.address as usize] =
-        cpu.memory[execution_result.result as usize] as u32;
+pub fn handle_lb(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
+    ExecutionResult::new(
+        cpu.memory[execution_result.result as usize] as u32,
+        execution_result.address,
+    )
 }
 
 #[cfg(test)]
@@ -140,7 +161,6 @@ mod tests {
     const RS2_REGISTER: u8 = 11;
     const DEFAULT_VALUE_RS1: u32 = 1;
     const DEFAULT_VALUE_RS2: u32 = 1;
-    const DEFAULT_VALUE_IMM: u32 = 1;
 
     #[test]
     fn test_sb() {
@@ -220,14 +240,13 @@ mod tests {
 
         cpu.register[RS1_REGISTER as usize] = 100;
         let res = execute(&mut cpu, &instr).unwrap();
-        handle_memory_access(&mut cpu, &instr, &res);
 
-        let value = ((cpu.memory[res.result as usize + 3] as u32) << 24)
-            | ((cpu.memory[res.result as usize + 2] as u32) << 16)
-            | ((cpu.memory[res.result as usize + 1] as u32) << 8)
-            | (cpu.memory[(res.result) as usize] as u32);
+        let memory_result = handle_memory_access(&mut cpu, &instr, &res)
+            .unwrap()
+            .unwrap();
 
-        assert_eq!(value, cpu.register[RD_REGISTER as usize] as u32);
+        assert_eq!(memory_result.address, RD_REGISTER as u32);
+        assert_eq!(memory_result.result, 857870677);
     }
 
     #[test]
@@ -249,10 +268,12 @@ mod tests {
         let res = execute(&mut cpu, &instr).unwrap();
         handle_memory_access(&mut cpu, &instr, &res);
 
-        let value = ((cpu.memory[res.result as usize + 1] as u32) << 8)
-            | (cpu.memory[(res.result) as usize] as u32);
+        let memory_result = handle_memory_access(&mut cpu, &instr, &res)
+            .unwrap()
+            .unwrap();
 
-        assert_eq!(value, cpu.register[RD_REGISTER as usize] as u32);
+        assert_eq!(memory_result.address, RD_REGISTER as u32);
+        assert_eq!(memory_result.result, 4437);
     }
 
     #[test]
@@ -272,12 +293,13 @@ mod tests {
 
         cpu.register[RS1_REGISTER as usize] = 100;
         let res = execute(&mut cpu, &instr).unwrap();
-        handle_memory_access(&mut cpu, &instr, &res);
 
-        let value = ((cpu.memory[res.result as usize + 1] as u32) << 8)
-            | (cpu.memory[(res.result) as usize] as u32);
+        let memory_result = handle_memory_access(&mut cpu, &instr, &res)
+            .unwrap()
+            .unwrap();
 
-        assert_eq!(value, cpu.register[RD_REGISTER as usize] as u32);
+        assert_eq!(memory_result.address, RD_REGISTER as u32);
+        assert_eq!(memory_result.result, 4437);
     }
 
     #[test]
@@ -297,11 +319,12 @@ mod tests {
 
         cpu.register[RS1_REGISTER as usize] = 100;
         let res = execute(&mut cpu, &instr).unwrap();
-        handle_memory_access(&mut cpu, &instr, &res);
+        let memory_result = handle_memory_access(&mut cpu, &instr, &res)
+            .unwrap()
+            .unwrap();
 
-        let value = (cpu.memory[(res.result) as usize] as u32);
-
-        assert_eq!(value, cpu.register[RD_REGISTER as usize] as u32);
+        assert_eq!(memory_result.address, RD_REGISTER as u32);
+        assert_eq!(memory_result.result, 85);
     }
 
     #[test]
@@ -321,10 +344,11 @@ mod tests {
 
         cpu.register[RS1_REGISTER as usize] = 100;
         let res = execute(&mut cpu, &instr).unwrap();
-        handle_memory_access(&mut cpu, &instr, &res);
+        let memory_result = handle_memory_access(&mut cpu, &instr, &res)
+            .unwrap()
+            .unwrap();
 
-        let value = (cpu.memory[(res.result) as usize] as u32);
-
-        assert_eq!(value, cpu.register[RD_REGISTER as usize] as u32);
+        assert_eq!(memory_result.address, RD_REGISTER as u32);
+        assert_eq!(memory_result.result, 85);
     }
 }

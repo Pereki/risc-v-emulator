@@ -4,16 +4,18 @@ mod cpu;
 mod logger;
 
 fn main() {
+    //stupid AI test program (corrected by hand, because modern llms doesnt seem to understand hex
+    //or bin)
     let program = vec![
-        0x93, 0x05, 0xA0, 0x00, 0x13, 0x06, 0xA0, 0x00, 0x33, 0x85, 0xC5, 0x00, 0xB3, 0x06, 0xB5,
-        0x40,
+        0x13, 0x05, 0xa0, 0x00, 0x93, 0x05, 0x40, 0x01, 0x33, 0x06, 0xb5, 0x00, 0x23, 0x2a, 0xc0,
+        0x02, 0x83, 0x26, 0x40, 0x03, 0xe3, 0x0c, 0xC6, 0xfe,
     ];
     let mut cpu = RiscVCpu::new();
-    let instructioncount = 4;
+    let maxpc = program.len();
 
     cpu.load_program(&program);
 
-    for _ in 0..instructioncount {
+    while cpu.program_counter <= maxpc as u8 {
         let res = cpu.fetch();
         let instruction = match cpu.decode(res) {
             Ok(v) => v,
@@ -37,13 +39,24 @@ fn main() {
         )
         .as_str());
 
-        let had_memory_access = cpu.memory_access(&instruction, &execute_result);
+        let new_or_old_result = match cpu.memory_access(&instruction, &execute_result) {
+            Some(res) => match res {
+                Ok(result) => result,
+                Err(e) => {
+                    println!("Memory Access Error: {}", e);
+                    return;
+                }
+            },
+            None => execute_result,
+        };
         cpu.write_back(
-            execute_result.address as u8,
-            execute_result.result,
-            had_memory_access,
+            new_or_old_result.address as u8,
+            new_or_old_result.result,
+            new_or_old_result.need_write,
         );
 
         cpu.next_operation();
     }
+
+    cpu.print_cpu_state();
 }
