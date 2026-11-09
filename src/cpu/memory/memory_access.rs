@@ -1,7 +1,12 @@
 use std::error::Error;
 
 use crate::cpu::{
-    decode::instructions::Instruction, execute::executer::ExecutionResult, risc_v_cpu::RiscVCpu,
+    decode::instructions::Instruction,
+    execute::executer::ExecutionResult,
+    memory::memory_handler::{
+        handle_lb, handle_lbu, handle_lh, handle_lhu, handle_lw, handle_sb, handle_sh, handle_sw,
+    },
+    risc_v_cpu::RiscVCpu,
 };
 
 pub fn handle_memory_access(
@@ -15,57 +20,41 @@ pub fn handle_memory_access(
 
     match instruction {
         Instruction::SB {
-            funct3: _,
-            fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
         } => Some(Ok(handle_sb(cpu, execution_result))),
         Instruction::SH {
-            funct3: _,
-            fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
         } => Some(Ok(handle_sh(cpu, execution_result))),
         Instruction::SW {
-            funct3: _,
-            fmt: _,
             rs1: _,
             rs2: _,
             imm: _,
         } => Some(Ok(handle_sw(cpu, execution_result))),
         Instruction::LHU {
-            funct3: _,
-            fmt: _,
             rd: _,
             rs1: _,
             imm: _,
         } => Some(Ok(handle_lhu(cpu, execution_result))),
         Instruction::LBU {
-            funct3: _,
-            fmt: _,
             rd: _,
             rs1: _,
             imm: _,
         } => Some(Ok(handle_lbu(cpu, execution_result))),
         Instruction::LW {
-            funct3: _,
-            fmt: _,
             rd: _,
             rs1: _,
             imm: _,
         } => Some(Ok(handle_lw(cpu, execution_result))),
         Instruction::LH {
-            funct3: _,
-            fmt: _,
             rd: _,
             rs1: _,
             imm: _,
         } => Some(Ok(handle_lh(cpu, execution_result))),
         Instruction::LB {
-            funct3: _,
-            fmt: _,
             rd: _,
             rs1: _,
             imm: _,
@@ -74,85 +63,9 @@ pub fn handle_memory_access(
     }
 }
 
-pub fn handle_sb(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    cpu.memory[execution_result.address as usize] = (execution_result.result) as u8;
-
-    let mut exec_res = ExecutionResult::new(0, 0);
-    exec_res.need_write = false;
-    exec_res
-}
-
-pub fn handle_sh(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    cpu.memory[execution_result.address as usize] = ((execution_result.result) & 0xFF) as u8;
-
-    cpu.memory[(execution_result.address + 1) as usize] =
-        (((execution_result.result) & 0xFF00) >> 8) as u8;
-
-    let mut exec_res = ExecutionResult::new(0, 0);
-    exec_res.need_write = false;
-    exec_res
-}
-
-pub fn handle_sw(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    cpu.memory[execution_result.address as usize] = ((execution_result.result) & 0xFF) as u8;
-
-    cpu.memory[(execution_result.address + 1) as usize] =
-        (((execution_result.result) & 0xFF00) >> 8) as u8;
-
-    cpu.memory[(execution_result.address + 2) as usize] =
-        (((execution_result.result) & 0xFF0000) >> 16) as u8;
-
-    cpu.memory[(execution_result.address + 3) as usize] =
-        (((execution_result.result) & 0xFF000000) >> 24) as u8;
-
-    let mut exec_res = ExecutionResult::new(0, 0);
-    exec_res.need_write = false;
-    exec_res
-}
-
-pub fn handle_lhu(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    ExecutionResult::new(
-        (cpu.memory[(execution_result.result + 1) as usize] as i32 as u32) << 8
-            | cpu.memory[execution_result.result as usize] as i32 as u32,
-        execution_result.address,
-    )
-}
-
-pub fn handle_lbu(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    ExecutionResult::new(
-        cpu.memory[execution_result.result as usize] as i32 as u32,
-        execution_result.address,
-    )
-}
-
-pub fn handle_lw(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    ExecutionResult::new(
-        (cpu.memory[execution_result.result as usize + 3] as u32) << 24
-            | (cpu.memory[execution_result.result as usize + 2] as u32) << 16
-            | (cpu.memory[execution_result.result as usize + 1] as u32) << 8
-            | cpu.memory[execution_result.result as usize] as u32,
-        execution_result.address,
-    )
-}
-
-pub fn handle_lh(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    ExecutionResult::new(
-        (cpu.memory[(execution_result.result + 1) as usize] as u32) << 8
-            | cpu.memory[execution_result.result as usize] as u32,
-        execution_result.address,
-    )
-}
-
-pub fn handle_lb(cpu: &mut RiscVCpu, execution_result: &ExecutionResult) -> ExecutionResult {
-    ExecutionResult::new(
-        cpu.memory[execution_result.result as usize] as u32,
-        execution_result.address,
-    )
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::cpu::{decode::instructions::FmtType, execute::executer::execute};
+    use crate::cpu::execute::executer::execute;
 
     use super::*; // Brings everything from the outer module into scope
 
@@ -165,8 +78,6 @@ mod tests {
     #[test]
     fn test_sb() {
         let instr = Instruction::SB {
-            funct3: 0,
-            fmt: FmtType::R,
             rs1: RS1_REGISTER,
             rs2: RS2_REGISTER,
             imm: 0,
@@ -183,8 +94,6 @@ mod tests {
     #[test]
     fn test_sh() {
         let instr = Instruction::SH {
-            funct3: 0,
-            fmt: FmtType::R,
             rs1: RS1_REGISTER,
             rs2: RS2_REGISTER,
             imm: 0,
@@ -204,8 +113,6 @@ mod tests {
     #[test]
     fn test_sw() {
         let instr = Instruction::SW {
-            funct3: 0,
-            fmt: FmtType::R,
             rs1: RS1_REGISTER,
             rs2: RS2_REGISTER,
             imm: 0,
@@ -226,8 +133,6 @@ mod tests {
     #[test]
     fn test_lw() {
         let instr = Instruction::LW {
-            funct3: 0,
-            fmt: FmtType::R,
             rd: RD_REGISTER,
             rs1: RS1_REGISTER,
             imm: 0,
@@ -252,8 +157,6 @@ mod tests {
     #[test]
     fn test_lh() {
         let instr = Instruction::LH {
-            funct3: 0,
-            fmt: FmtType::R,
             rd: RD_REGISTER,
             rs1: RS1_REGISTER,
             imm: 0,
@@ -279,8 +182,6 @@ mod tests {
     #[test]
     fn test_lhu() {
         let instr = Instruction::LHU {
-            funct3: 0,
-            fmt: FmtType::R,
             rd: RD_REGISTER,
             rs1: RS1_REGISTER,
             imm: 0,
@@ -305,8 +206,6 @@ mod tests {
     #[test]
     fn test_lb() {
         let instr = Instruction::LB {
-            funct3: 0,
-            fmt: FmtType::R,
             rd: RD_REGISTER,
             rs1: RS1_REGISTER,
             imm: 0,
@@ -330,8 +229,6 @@ mod tests {
     #[test]
     fn test_lbu() {
         let instr = Instruction::LBU {
-            funct3: 0,
-            fmt: FmtType::R,
             rd: RD_REGISTER,
             rs1: RS1_REGISTER,
             imm: 0,
