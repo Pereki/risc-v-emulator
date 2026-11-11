@@ -27,96 +27,95 @@ fn get_register_value(cpu: &RiscVCpu, register: u8) -> u32 {
 pub fn execute(
     risc_v_cpu: &mut RiscVCpu,
     instruction_execution_steps: &InstructionExecutionSteps,
-) -> Option<Result<ResultSet, Box<dyn Error>>> {
+) -> Result<Option<ResultSet>, Box<dyn Error>> {
     if !instruction_execution_steps.next_steps.contains(&EXECUTE) {
-        return None;
+        return Ok(None);
     }
 
     let instruction = &instruction_execution_steps.instruction;
 
-    let res = match instruction {
-        BGEU { rs1, rs2, imm } => Ok(handle_bgeu(risc_v_cpu, *rs1, *rs2, *imm)),
-        BLTU { rs1, rs2, imm } => Ok(handle_bltu(risc_v_cpu, *rs1, *rs2, *imm)),
-        BGE { rs1, rs2, imm } => Ok(handle_bge(risc_v_cpu, *rs1, *rs2, *imm)),
-        BLT { rs1, rs2, imm } => Ok(handle_blt(risc_v_cpu, *rs1, *rs2, *imm)),
-        BNE { rs1, rs2, imm } => Ok(handle_bne(risc_v_cpu, *rs1, *rs2, *imm)),
-        BEQ { rs1, rs2, imm } => Ok(handle_beq(risc_v_cpu, *rs1, *rs2, *imm)),
-        SB { rs1, rs2, imm } => Ok(handle_sb(risc_v_cpu, *rs1, *rs2, *imm)),
-        SW { rs1, rs2, imm } => Ok(handle_sw(risc_v_cpu, *rs1, *rs2, *imm)),
-        SH { rs1, rs2, imm } => Ok(handle_sh(risc_v_cpu, *rs1, *rs2, *imm)),
-        LHU { rd, rs1, imm } => Ok(handle_load_execute(risc_v_cpu, *rd, *rs1, *imm)),
-        LBU { rd, rs1, imm } => Ok(handle_load_execute(risc_v_cpu, *rd, *rs1, *imm)),
-        LW { rd, rs1, imm } => Ok(handle_load_execute(risc_v_cpu, *rd, *rs1, *imm)),
-        LH { rd, rs1, imm } => Ok(handle_load_execute(risc_v_cpu, *rd, *rs1, *imm)),
-        LB { rd, rs1, imm } => Ok(handle_load_execute(risc_v_cpu, *rd, *rs1, *imm)),
-        SLTIU { rd, rs1, imm } => Ok(handle_sltu(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
+    Ok(Some(match instruction {
+        BGEU { rs1, rs2, imm } => handle_bgeu(risc_v_cpu, *rs1, *rs2, *imm),
+        BLTU { rs1, rs2, imm } => handle_bltu(risc_v_cpu, *rs1, *rs2, *imm),
+        BGE { rs1, rs2, imm } => handle_bge(risc_v_cpu, *rs1, *rs2, *imm),
+        BLT { rs1, rs2, imm } => handle_blt(risc_v_cpu, *rs1, *rs2, *imm),
+        BNE { rs1, rs2, imm } => handle_bne(risc_v_cpu, *rs1, *rs2, *imm),
+        BEQ { rs1, rs2, imm } => handle_beq(risc_v_cpu, *rs1, *rs2, *imm),
+        SB { rs1, rs2, imm } => handle_sb(risc_v_cpu, *rs1, *rs2, *imm),
+        SW { rs1, rs2, imm } => handle_sw(risc_v_cpu, *rs1, *rs2, *imm),
+        SH { rs1, rs2, imm } => handle_sh(risc_v_cpu, *rs1, *rs2, *imm),
+        LHU { rd, rs1, imm } => handle_load_execute(risc_v_cpu, *rd, *rs1, *imm),
+        LBU { rd, rs1, imm } => handle_load_execute(risc_v_cpu, *rd, *rs1, *imm),
+        LW { rd, rs1, imm } => handle_load_execute(risc_v_cpu, *rd, *rs1, *imm),
+        LH { rd, rs1, imm } => handle_load_execute(risc_v_cpu, *rd, *rs1, *imm),
+        LB { rd, rs1, imm } => handle_load_execute(risc_v_cpu, *rd, *rs1, *imm),
+        SLTIU { rd, rs1, imm } => handle_sltu(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
 
-        SLTI { rd, rs1, imm } => Ok(handle_slt(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
-        SRAI { rd, rs1, imm } => Ok(handle_sra(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
-        SRLI { rd, rs1, imm } => Ok(handle_srl(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
-        SLLI { rd, rs1, imm } => Ok(handle_sll(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
+        SLTI { rd, rs1, imm } => handle_slt(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
+        SRAI { rd, rs1, imm } => handle_sra(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
+        SRLI { rd, rs1, imm } => handle_srl(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
+        SLLI { rd, rs1, imm } => handle_sll(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
 
-        ANDI { rd, rs1, imm } => Ok(handle_and(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
+        ANDI { rd, rs1, imm } => handle_and(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
 
-        ORI { rd, rs1, imm } => Ok(handle_or(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
-        XORI { rd, rs1, imm } => Ok(handle_xor(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
-        ADDI { rd, rs1, imm } => Ok(handle_add(*rd, get_register_value(risc_v_cpu, *rs1), *imm)),
-        ADD { rd, rs1, rs2 } => Ok(handle_add(
+        ORI { rd, rs1, imm } => handle_or(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
+        XORI { rd, rs1, imm } => handle_xor(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
+        ADDI { rd, rs1, imm } => handle_add(*rd, get_register_value(risc_v_cpu, *rs1), *imm),
+        ADD { rd, rs1, rs2 } => handle_add(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
-        SUB { rd, rs1, rs2 } => Ok(handle_sub(
+        ),
+        SUB { rd, rs1, rs2 } => handle_sub(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
-        XOR { rd, rs1, rs2 } => Ok(handle_xor(
+        ),
+        XOR { rd, rs1, rs2 } => handle_xor(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
-        OR { rd, rs1, rs2 } => Ok(handle_or(
+        ),
+        OR { rd, rs1, rs2 } => handle_or(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
+        ),
 
-        AND { rd, rs1, rs2 } => Ok(handle_and(
+        AND { rd, rs1, rs2 } => handle_and(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
+        ),
 
-        SLL { rd, rs1, rs2 } => Ok(handle_sll(
+        SLL { rd, rs1, rs2 } => handle_sll(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
+        ),
 
-        SRL { rd, rs1, rs2 } => Ok(handle_srl(
+        SRL { rd, rs1, rs2 } => handle_srl(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
+        ),
 
-        SRA { rd, rs1, rs2 } => Ok(handle_sra(
+        SRA { rd, rs1, rs2 } => handle_sra(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
+        ),
 
-        SLT { rd, rs1, rs2 } => Ok(handle_slt(
+        SLT { rd, rs1, rs2 } => handle_slt(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
+        ),
 
-        SLTU { rd, rs1, rs2 } => Ok(handle_sltu(
+        SLTU { rd, rs1, rs2 } => handle_sltu(
             *rd,
             get_register_value(risc_v_cpu, *rs1),
             get_register_value(risc_v_cpu, *rs2),
-        )),
-    };
-    Some(res)
+        ),
+    }))
 }

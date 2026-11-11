@@ -51,14 +51,14 @@ impl RiscVCpu {
     pub fn execute(
         &mut self,
         instruction: &InstructionExecutionSteps,
-    ) -> Option<Result<ResultSet, Box<dyn Error>>> {
+    ) -> Result<Option<ResultSet>, Box<dyn Error>> {
         execute(self, instruction)
     }
 
     pub fn memory_access(
         &mut self,
         instruction: &InstructionExecutionSteps,
-    ) -> Option<Result<ResultSet, Box<dyn Error>>> {
+    ) -> Result<Option<ResultSet>, Box<dyn Error>> {
         handle_memory_access(self, instruction)
     }
 

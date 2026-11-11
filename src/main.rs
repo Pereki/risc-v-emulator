@@ -26,39 +26,35 @@ fn main() {
             }
         };
 
-        let execute_result = match cpu.execute(&instruction) {
-            Some(e) => match e {
-                Ok(v) => Some(v),
-                Err(err) => {
-                    println!("Execution error: {}", err);
-                    return;
-                }
-            },
-            None => None,
+        instruction.arithmetic_result = match cpu.execute(&instruction) {
+            Ok(e) => e,
+            Err(err) => {
+                println!("Execution error: {}", err);
+                return;
+            }
         };
 
         log(format!(
             "Instruction {:?} result is {:?}",
-            instruction, execute_result
+            instruction, instruction.arithmetic_result
         )
         .as_str());
 
-        instruction.arithmetic_result = execute_result;
+        instruction.memory_access_result = match cpu.memory_access(&instruction) {
+            Ok(res) => res,
 
-        //TODO: Switch Option and Result in memory_access, writeback and excute
-        let new_or_old_result = match cpu.memory_access(&instruction) {
-            Some(res) => match res {
-                Ok(result) => Some(result),
-                Err(e) => {
-                    println!("Memory Access Error: {}", e);
-                    return;
-                }
-            },
-            None => None,
+            Err(e) => {
+                println!("Memory Access Error: {}", e);
+                return;
+            }
         };
 
-        instruction.memory_access_result = new_or_old_result;
-        cpu.write_back(&instruction);
+        match cpu.write_back(&instruction) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Writeback Error: {}", e);
+            }
+        }
 
         cpu.next_operation();
     }
